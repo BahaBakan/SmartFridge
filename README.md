@@ -12,6 +12,12 @@
 
 ## ✨ Öne Çıkan Özellikler
 
+
+<img width="540" height="1138" alt="resim1" src="https://github.com/user-attachments/assets/dc4cf10f-bf81-48a1-b86a-7d7c91e27754" />
+<img width="538" height="1141" alt="resim2" src="https://github.com/user-attachments/assets/9ca4a6b8-7e5c-4953-a865-ddecbef00a8c" />
+<img width="502" height="943" alt="resim3" src="https://github.com/user-attachments/assets/449187b3-e99e-43a6-a4eb-69db8e120862" />
+
+
 ### 📱 Yazılım (Android App)
 * **100% Jetpack Compose:** Arayüz tamamen Google'ın en güncel ve modern arayüz geliştirme kiti ile sıfırdan yazılmıştır.
 * **Otantik & İnteraktif Tasarım:** Klasik sıkıcı tablolar yerine; spiralli, 3D (üç boyutlu) sayfa çevirme (Page-flip) animasyonlarına sahip, gerçekçi bir not defteri kullanıcı deneyimi (UX) sunar. 
