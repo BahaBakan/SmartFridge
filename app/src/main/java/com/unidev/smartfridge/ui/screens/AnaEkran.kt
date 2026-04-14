@@ -1,13 +1,18 @@
 package com.unidev.smartfridge.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -16,112 +21,244 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.Font
+import com.unidev.smartfridge.R // R.font için kendi uygulamanın R kütüphanesini import etmelisin
+import kotlin.math.max
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AnaEkran() {
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Akıllı Buzdolabım", fontWeight = FontWeight.Bold, fontSize = 28.sp) },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            CenterAlignedTopAppBar(
+                title = { Text("Akıllı Buzdolabım", fontWeight = FontWeight.Medium, fontSize = 20.sp) }, // Daha kibar ve ince
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface, // Arka planla uyumlu, devasa mor kutu yok
+                    titleContentColor = MaterialTheme.colorScheme.onSurface
                 )
             )
         }
     ) { innerPadding ->
-        LazyColumn(
+
+        //İleride üzerini kalemle çizmek için koyuyoruz
+        var alinacaklar = remember {
+            mutableStateListOf(
+                "Domates (Acil)", "Taze Soğan", "Şişe Su", "Buzdolabı Poşeti",
+                "Yumurta (10'lu)", "Kaşar Peyniri", "Zeytinyağı", "Türk Kahvesi",
+                "Bulaşık Deterjanı", "Süt", "Yoğurt", "Limon"
+            )
+        }
+
+        // Uzun listeyi defterin satırı kadar (örn: 8'erli gruplara bölüyoruz. (sayfalara) )
+        val sayfalar = alinacaklar.chunked(8)
+        val sayfaSayisi = max(1,sayfalar.size) // En az bir sayfa olsun diye
+        val pagerState = rememberPagerState(pageCount = {sayfaSayisi})
+
+        // Magnetleri getirelim
+        val magnetler = listOf(
+            R.drawable.italya_magnet,
+            R.drawable.fethiye_magnet,
+            R.drawable.istanbul_magnet,
+            R.drawable.petersburg_magnet,
+            R.drawable.switzerland_magnet
+        )
+
+        // Sayfa çevirici motoru yazalım
+        HorizontalPager(
+            state = pagerState,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            // --- DOLAPTAKİLER BÖLÜMÜ ---
-            item {
-                BolumBasligi(baslik = "Dolaptakiler (YOLOv11 Kamerası)", icon = Icons.Default.CheckCircle, iconTint = Color(0xFF388E3C))
-            }
-            item {
-                ModernUrunKarti(isim = "Süt", detay = "Durum: Var", type = "ok", icon = Icons.Default.Check)
-            }
-            item {
-                ModernUrunKarti(isim = "Yumurta", detay = "Mevcut: 5 (Eşik: 3)", type = "ok", icon = Icons.Default.Star)
+                .padding(bottom = 16.dp, start = 16.dp, end = 16.dp)
+        )  {
+            sayfaIndex -> // Şuan 0. ya da 1. sayfada olduğumuzu tutar.
+
+            // Hangi sayfadaysak sırada o magnet gelsin. 5'i geçerse başa sarsın
+            val gecerliMagnet = magnetler[sayfaIndex % magnetler.size]
+            val buSayfaninUrunleri = if (sayfalar.isNotEmpty()) sayfalar[sayfaIndex] else emptyList()
+
+            // Animasyon Matematiği
+            val sayfaOffset = (pagerState.currentPage - sayfaIndex) + pagerState.currentPageOffsetFraction
+
+
+            // Sayfanın Kendisi
+            Box(modifier = Modifier
+                .fillMaxSize()
+                .graphicsLayer{
+                    // 1. Kapı Menteşesi Noktası: Sayfanın sol kenarı
+                    transformOrigin = TransformOrigin(0f, 0.5f)
+
+                    // 2. Y ekseninde bir kitap yaprağı gibi kıvrılarak çevrilmesi
+                    rotationY = -100f * sayfaOffset.coerceIn(-1f, 1f)
+
+                    // 3. Uzaktan bakıyormuş gibi gerçekçi bir 3D derinlik algısı
+                    cameraDistance = 16 * density
+
+                    // 4. Sayfa kaybolurken eski sayfa kararsın/saydamlaşsın
+                    alpha = (1f - kotlin.math.abs(sayfaOffset).toFloat()).coerceIn(0f, 1f)
+                }
+
+            ) {
+
+                // NOT DEFTERİ (Sadece o sayfaya ait dilimlenmiş ürünlerle)
+                OtantikNotDefteriListesi(eksikSiparisler = buSayfaninUrunleri, sayfaNo = sayfaIndex + 1, toplamSayfa = sayfaSayisi)
+                // O SAYFAYA ÖZEL MAGNET
+                Image(
+                    painter = painterResource(id = gecerliMagnet),
+                    contentDescription = "Sayfa Magneti",
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd) // SAĞ ALT KÖŞEYE ALDIK!
+                        .offset(x = 16.dp, y = 16.dp) // Hafif yukarı ve dışarı sarkıtarak harika bir tutturma efekti
+                        .size(140.dp) // KOCAMAN YAPTIK!
+                        .rotate(if (sayfaIndex % 2 == 0) -14f else 8f) // Altta olduğu için yana doğru çok tatlı eğilecektir
+                )
             }
 
-            item { Spacer(modifier = Modifier.height(8.dp)) }
-
-            // --- ALINACAKLAR BÖLÜMÜ ---
-            item {
-                BolumBasligi(baslik = "Alınacaklar Listesi", icon = Icons.Default.ShoppingCart, iconTint = Color(0xFFD32F2F))
-            }
-            item {
-                // Alınacak ürünü belirgin şekilde kırmızımsı (hata/alert rengi) uyarı kartıyla gösteriyoruz.
-                ModernUrunKarti(isim = "Domates", detay = "Durum: Bitti (Mevcut: 0, Eşik: 2)", type = "alert", icon = Icons.Default.Info)
-            }
         }
+
     }
 }
 
-// Modern Bölüm Başlığı Tasarımı
-@Composable
-fun BolumBasligi(baslik: String, icon: ImageVector, iconTint: Color) {
-    Column {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(imageVector = icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(24.dp))
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = baslik,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        }
-        HorizontalDivider(
-            modifier = Modifier.padding(top = 8.dp, bottom = 4.dp),
-            color = iconTint.copy(alpha = 0.3f),
-            thickness = 2.dp
-        )
-    }
-}
 
-// Eski UrunKarti'nın Modern ve İkonlu Versiyonu
+
 @Composable
-fun ModernUrunKarti(isim: String, detay: String, type: String, icon: ImageVector) {
-    // Ürün bizdeyse (ok) gri/soft renkler, bittiyse ve alınacaksa (alert) kırmızımsı renkler
-    val containerColor = if (type == "ok") MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.errorContainer
-    val contentColor = if (type == "ok") MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onErrorContainer
-    
+fun OtantikNotDefteriListesi(eksikSiparisler: List<String>, sayfaNo: Int, toplamSayfa: Int) {
+    val kagitRengi = Color(0xFFFFF9C4)
+    val maviCizgi = Color(0xFF64B5F6)
+    val kirmiziMarjin = Color(0xFFEF5350)
+
+    val elYazimiz = FontFamily(Font(R.font.caveat))
+
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = containerColor),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(12.dp),
+        shape = RoundedCornerShape(8.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 12.dp)
     ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(kagitRengi)
+                .drawBehind {
+                    val ilkSatirY = 130.dp.toPx()
+                    val satirAraligi = 56.dp.toPx()
+
+                    // 1. YATAY MAVİ ÇİZGİLER
+                    var y = ilkSatirY
+                    while (y < size.height) {
+                        drawLine(color = maviCizgi, start = Offset(0f, y), end = Offset(size.width, y), strokeWidth = 1.dp.toPx())
+                        y += satirAraligi
+                    }
+
+                    // 2. KUSURSUZ KIRMIZI MARJİN (Çok daha sola çekildi)
+                    val solMarjinX = 52.dp.toPx()
+                    drawLine(color = kirmiziMarjin, start = Offset(solMarjinX, 0f), end = Offset(solMarjinX, size.height), strokeWidth = 2.dp.toPx())
+
+                    // 3. GERÇEKÇİ STANDART SPİRALLER
+                    val delikYaricapi = 6.dp.toPx() // Delikler gözle görülür şekilde büyüdü (Mükemmel boyut)
+                    val spiralAraligi = 28.dp.toPx() // Tellerin arası çok daha ferah oldu
+                    val spiralX = 16.dp.toPx() // Kenara olan yakınlığı mükemmeldi, onu koruduk
+                    var delikMerkeziY = 40.dp.toPx()
+
+                    val telKalinligi = 4.dp.toPx() // Tel biraz büyüdüğü için gümüş metal kalınlığını da artırdık
+
+                    while (delikMerkeziY < size.height - 16.dp.toPx()) {
+                        // Kağıt deliği
+                        drawCircle(color = Color(0xFFBCAAA4), radius = delikYaricapi, center = Offset(spiralX, delikMerkeziY))
+                        drawCircle(color = Color(0xFF6D4C41), radius = delikYaricapi * 0.8f, center = Offset(spiralX, delikMerkeziY))
+
+                        // Tel Gölgesi (Kağıda vuran gölge)
+                        drawLine(
+                            color = Color(0x40000000),
+                            start = Offset(-2.dp.toPx(), delikMerkeziY - 6.dp.toPx()),
+                            end = Offset(spiralX + 1.dp.toPx(), delikMerkeziY - 1.dp.toPx()),
+                            strokeWidth = telKalinligi * 1.5f, cap = StrokeCap.Round
+                        )
+                        // GERÇEK METAL TEL (Tam sol uçtan, kağıt dışından deliğe uzanıyor)
+                        drawLine(
+                            color = Color(0xFF424242),
+                            start = Offset(-4.dp.toPx(), delikMerkeziY - 4.dp.toPx()),
+                            end = Offset(spiralX + 1.dp.toPx(), delikMerkeziY - 1.dp.toPx()),
+                            strokeWidth = telKalinligi, cap = StrokeCap.Round
+                        )
+                        // TELDEKİ PARLAKLIK (Gümüş metalik yansıma)
+                        drawLine(
+                            color = Color(0xFFCFD8DC),
+                            start = Offset(-2.dp.toPx(), delikMerkeziY - 3.dp.toPx()),
+                            end = Offset(spiralX, delikMerkeziY - 1.dp.toPx()),
+                            strokeWidth = telKalinligi * 0.4f, cap = StrokeCap.Round
+                        )
+
+                        delikMerkeziY += spiralAraligi
+                    }
+                }
         ) {
-            // İkon Arka Plan Çerçevesi
+            // BAŞLIK (Yer kaplamaması için start = 64.dp'ye çekildi ve font hafif düzeltildi)
             Box(
                 modifier = Modifier
-                    .size(48.dp)
-                    .background(Color.White.copy(alpha = 0.5f), shape = RoundedCornerShape(12.dp)),
-                contentAlignment = Alignment.Center
+                    .fillMaxWidth()
+                    .height(130.dp)
+                    .padding(start = 64.dp, end = 16.dp),
+                contentAlignment = Alignment.BottomStart
             ) {
-                Icon(imageVector = icon, contentDescription = isim, tint = contentColor)
+                Text(
+                    text = "Alışveriş Listesi",
+                    fontFamily = elYazimiz,
+                    fontSize = 40.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black,
+                    modifier = Modifier.padding(bottom = 6.dp)
+                )
             }
-            Spacer(modifier = Modifier.width(16.dp))
-            
-            // Metinler
-            Column {
-                Text(text = isim, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = contentColor)
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(text = detay, fontSize = 14.sp, color = contentColor.copy(alpha = 0.8f))
+
+            // MADDELER (Kırmızı çizginin hemen sağından başlıyor)
+            eksikSiparisler.forEach { urunAdi ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .padding(start = 64.dp, end = 16.dp),
+                    contentAlignment = Alignment.BottomStart
+                ) {
+                    Text(
+                        text = "- $urunAdi",
+                        fontFamily = elYazimiz,
+                        fontSize = 32.sp,
+                        color = Color(0xFF333333),
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                }
             }
+
+            // Sayfanın geri kalan tüm boşluğunu yutuyoruz ve en alta sayfa sayısı geliyor
+            Spacer(modifier = Modifier.weight(1f))
+
+            // Kağıdın en alt ortasına otantik bir numaratör ekliyoruz
+
+            Text(
+                text = "- $sayfaNo / $toplamSayfa -",
+                fontFamily = elYazimiz,
+                fontSize = 24.sp,
+                color = Color.DarkGray,
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(bottom = 38.dp)
+            )
         }
     }
 }
+
+
 
 @Preview(showBackground = true)
 @Composable

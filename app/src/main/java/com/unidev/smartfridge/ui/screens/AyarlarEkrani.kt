@@ -2,6 +2,7 @@ package com.unidev.smartfridge.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
@@ -16,6 +17,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.clickable // Bunu yukarı importların arasına eklemeyi unutma
+import androidx.compose.foundation.layout.aspectRatio
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -57,33 +61,29 @@ fun AyarlarEkrani(onAnaEkranaGec: () -> Unit = {}) {
                 modifier = Modifier.align(Alignment.Start).padding(top = 4.dp, bottom = 24.dp)
             )
 
-            // Ürün 1: Süt
-            ModernSecimKarti(
-                urunAdi = "Süt (Var/Yok)",
-                icon = Icons.Default.ShoppingCart,
-                seciliMi = sutTakip,
-                onDegisim = { sutTakip = it }
-            )
+            // İlk Satır (Süt ve Yumurta yanyana durur)
+            Row(modifier = Modifier.fillMaxWidth()) {
+                Box(modifier = Modifier.weight(1f)) {
+                    UrunKartOgesi(urunAdi = "Süt", icon = Icons.Default.ShoppingCart, seciliMi = sutTakip) {
+                        sutTakip = !sutTakip
+                    }
+                }
+                Box(modifier = Modifier.weight(1f)) {
+                    UrunKartOgesi(urunAdi = "Yumurta", icon = Icons.Default.Star, seciliMi = yumurtaTakip) {
+                        yumurtaTakip = !yumurtaTakip
+                    }
+                }
+            }
+            // İkinci Satır (Domates tek başına durur, yanına yeni bir ürün gelene kadar boşluk bırakırız)
+            Row(modifier = Modifier.fillMaxWidth()) {
+                Box(modifier = Modifier.weight(1f)) {
+                    UrunKartOgesi(urunAdi = "Domates", icon = Icons.Default.Info, seciliMi = domatesTakip) {
+                        domatesTakip = !domatesTakip
+                    }
+                }
+                Spacer(modifier = Modifier.weight(1f)) // Ekranın sağı boş kalsın diye Spacer koyduk
+            }
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Ürün 2: Yumurta
-            ModernSecimKarti(
-                urunAdi = "Yumurta (Eşikli)",
-                icon = Icons.Default.Star,
-                seciliMi = yumurtaTakip,
-                onDegisim = { yumurtaTakip = it }
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Ürün 3: Domates
-            ModernSecimKarti(
-                urunAdi = "Domates (Eşikli)",
-                icon = Icons.Default.Info,
-                seciliMi = domatesTakip,
-                onDegisim = { domatesTakip = it }
-            )
 
             Spacer(modifier = Modifier.weight(1f)) // Kalan tüm boşluğu itip butonu en alta attık.
 
@@ -105,54 +105,42 @@ fun AyarlarEkrani(onAnaEkranaGec: () -> Unit = {}) {
     }
 }
 
-// Şık ve İkonlu Seçim Kartı Tasarımı
+
 @Composable
-fun ModernSecimKarti(urunAdi: String, icon: ImageVector, seciliMi: Boolean, onDegisim: (Boolean) -> Unit) {
+fun UrunKartOgesi(
+    urunAdi: String,
+    icon: ImageVector,
+    seciliMi: Boolean,
+    onClick: () -> Unit
+){
+    //Seçiliyse farklı seçili değilse farklı arkaplan rengi
+    val arkaPlanRengi = if (seciliMi) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
+    val ikonRengi = if (seciliMi) MaterialTheme.colorScheme.primary else Color.Gray
+
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .padding(8.dp)
+            .fillMaxWidth()
+            .aspectRatio(1f) //Kartın kare (bire bir oran) olmasını sağlar.
+        .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            // Seçili ise daha canlı bir arka plan, değilse soluk
-            containerColor = if (seciliMi) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
-            else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = if (seciliMi) 2.dp else 0.dp)
+        colors = CardDefaults.cardColors(containerColor = arkaPlanRengi),
+        elevation = CardDefaults.cardElevation(defaultElevation = if (seciliMi) 4.dp else 0.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .background(
-                            color = if (seciliMi) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f) else Color.LightGray.copy(alpha = 0.3f),
-                            shape = RoundedCornerShape(10.dp)
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = urunAdi,
-                        tint = if (seciliMi) MaterialTheme.colorScheme.primary else Color.Gray
-                    )
-                }
-                Spacer(modifier = Modifier.width(16.dp))
-                Text(
-                    text = urunAdi,
-                    fontSize = 18.sp,
-                    fontWeight = if (seciliMi) FontWeight.Bold else FontWeight.Normal,
-                    color = if (seciliMi) MaterialTheme.colorScheme.onSurface else Color.Gray
-                )
-            }
-            Switch(
-                checked = seciliMi,
-                onCheckedChange = { yeniDurum -> onDegisim(yeniDurum) }
+            Icon(imageVector = icon, contentDescription = urunAdi, modifier = Modifier.size(48.dp), tint = ikonRengi)
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = urunAdi,
+                fontWeight = if(seciliMi) FontWeight.Bold else FontWeight.Normal,
+                color = if (seciliMi) MaterialTheme.colorScheme.onSurface else Color.Gray
             )
         }
+
     }
 }
+
