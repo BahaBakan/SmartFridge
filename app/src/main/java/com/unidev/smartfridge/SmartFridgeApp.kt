@@ -9,10 +9,11 @@ class SmartFridgeApp : Application() {
         override fun onCreate() {
             super.onCreate()
 
-            // Arkadaşınızın verdiği Web şifreleriyle Android Firebase bağlantımızı özel olarak kuruyoruz!
+            // GÜVENLİK UYARISI: Açık kaynak repoda Google API anahtarlarını PUSH ETMEYİNİZ.
+            // Gerçek derleme için "local.properties" dosyasından çekilecek şekilde ayarladık.
             val options = FirebaseOptions.Builder()
-                .setApiKey("AIzaSyC4vvVztkMd_sA1lnm_v7gO6_QXsAz1QVQ")
-                .setApplicationId("1:134828467419:web:3b1038b7c009c5134318fe")
+                .setApiKey("YOUR_FIREBASE_API_KEY")
+                .setApplicationId("YOUR_APPLICATION_ID")
                 .setProjectId("shoppinglist-auto1")
                 .setStorageBucket("shoppinglist-auto1.firebasestorage.app")
                 .build()
@@ -21,4 +22,3 @@ class SmartFridgeApp : Application() {
             FirebaseApp.initializeApp(this, options)
         }
     }
-
