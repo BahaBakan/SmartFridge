@@ -1,7 +1,9 @@
 package com.unidev.smartfridge.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.HorizontalPager
@@ -12,6 +14,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,15 +31,49 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
+import com.unidev.smartfridge.FirebaseHelper
+import com.unidev.smartfridge.FridgeAnalyzer
 import com.unidev.smartfridge.R // R.font için kendi uygulamanın R kütüphanesini import etmelisin
+import java.util.UUID
 import kotlin.math.max
+import kotlin.math.sin
 
+
+// Ürün modelimiz (veri sınıfı)
+
+data class AlinacakUrun(
+    val id: String = UUID.randomUUID().toString(), // Benzer ürünler karışmasın diye id atıyoruz.
+    val ad: String,
+    val ustuCizikMi: Boolean = false // Varsayılan olarak ürün listeye çizilmemiş olarak gider.
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AnaEkran() {
+
+    //Ekleme penceresinin açılıp kapanmasını tetikleyecek durum
+    val eklemeDialoguAcikMi = remember { mutableStateOf(false) }
+    //Yeni eklenecek ürünün yazısını tutacak durum
+    val yeniUrunAdi = remember { mutableStateOf("") }
+
+    val context = LocalContext.current
+    val analyzer = remember { FridgeAnalyzer(context) }
+
+    //Ürün listemiz artık "String" tutmayacak. 'alinacakUrun' nesnelerini tutacak.
+    val alinacaklar = remember {
+        mutableStateListOf(
+            AlinacakUrun(ad = "Domates"), AlinacakUrun(ad = "Taze Soğan"),
+            AlinacakUrun(ad = "Şişe Su"), AlinacakUrun(ad = "Buzdolabı Poşeti"), AlinacakUrun(ad = "süt"),
+            AlinacakUrun(ad = "peynir"), AlinacakUrun(ad = "Salatalık"), AlinacakUrun(ad = "Kavun"),
+            AlinacakUrun(ad = "karpuz"), AlinacakUrun(ad = "Vişne")
+        )
+    }
+
+
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -44,17 +81,74 @@ fun AnaEkran() {
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface, // Arka planla uyumlu, devasa mor kutu yok
                     titleContentColor = MaterialTheme.colorScheme.onSurface
-                )
+                ),
+
+                actions = {
+                    IconButton(onClick = {
+                        // 1. Tıklandığı an klasöre gidiyoruz.
+                        FirebaseHelper.enGuncelFotosunuGetir(
+                            onBasarili = { indirilenResim ->
+                                //2. Resim indi beynimize (Yapay zekaya) yediriyoruz.
+                                val tespitEdilenMaddeler = analyzer.fotograftaNeGoruyorsun(indirilenResim)
+
+                                // 3. Ekranda görünen "alinacaklar" defterimizi temizleyip yeni nesneleri basıyoruz!
+                                alinacaklar.clear()
+
+                                tespitEdilenMaddeler.forEach { urunAdi ->
+                                    alinacaklar.add(AlinacakUrun(ad = urunAdi))
+                                }
+                            },
+                            onHata = { hata ->
+                                Log.e("Uygulama", "İndirme Hatası", hata)
+                            }
+                        )
+                    }) {
+                        Icon(Icons.Default.Refresh, contentDescription = "Dolabı Güncelle", tint = Color(0xFFF9A826))
+                    }
+                }
             )
+        },
+
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = {eklemeDialoguAcikMi.value = true}, //Dialog'u açar
+                containerColor = Color(0xFFF9A826), // Deftere yakışır tatlı turuncu kalem rengi
+                contentColor = Color.White
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Yeni Ürün Ekle")
+            }
         }
+
     ) { innerPadding ->
 
-        //İleride üzerini kalemle çizmek için koyuyoruz
-        var alinacaklar = remember {
-            mutableStateListOf(
-                "Domates (Acil)", "Taze Soğan", "Şişe Su", "Buzdolabı Poşeti",
-                "Yumurta (10'lu)", "Kaşar Peyniri", "Zeytinyağı", "Türk Kahvesi",
-                "Bulaşık Deterjanı", "Süt", "Yoğurt", "Limon"
+        if(eklemeDialoguAcikMi.value) {
+            AlertDialog(
+                onDismissRequest = {eklemeDialoguAcikMi.value = false},
+                title = { Text("Listeye Ürün ekle") },
+                text = {
+                    OutlinedTextField(
+                        value = yeniUrunAdi.value,
+                        onValueChange = {yeniUrunAdi.value = it},
+                        label = {Text("ürün adı") },
+                        singleLine = true
+                    )
+                },
+
+                confirmButton = {
+                    TextButton( onClick = {
+                        if (yeniUrunAdi.value.isNotBlank()) {
+                            alinacaklar.add(AlinacakUrun(ad = yeniUrunAdi.value.trim()))
+                            yeniUrunAdi.value = "" // İşlem bitince içini sıfırlıyoruz
+                            eklemeDialoguAcikMi.value = false // Dialog'u kapat
+                        }
+                    }
+
+                    ) { Text("Ekle") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { eklemeDialoguAcikMi.value = false }) { Text("İptal") }
+                }
+
             )
         }
 
@@ -110,16 +204,29 @@ fun AnaEkran() {
             ) {
 
                 // NOT DEFTERİ (Sadece o sayfaya ait dilimlenmiş ürünlerle)
-                OtantikNotDefteriListesi(eksikSiparisler = buSayfaninUrunleri, sayfaNo = sayfaIndex + 1, toplamSayfa = sayfaSayisi)
+                OtantikNotDefteriListesi(
+                    eksikSiparisler = buSayfaninUrunleri,
+                    sayfaNo = sayfaIndex + 1,
+                    toplamSayfa = sayfaSayisi,
+                    onItemClick = { tiklananUrun ->
+                        val i = alinacaklar.indexOfFirst { it.id == tiklananUrun.id }
+                        if (i != -1) {
+                            alinacaklar[i] = alinacaklar[i].copy(ustuCizikMi = !alinacaklar[i].ustuCizikMi)
+                        }
+                    },
+                    onItemDelete = { silinecekUrun ->
+                        alinacaklar.removeIf { it.id == silinecekUrun.id }
+                    }
+                )
                 // O SAYFAYA ÖZEL MAGNET
                 Image(
                     painter = painterResource(id = gecerliMagnet),
                     contentDescription = "Sayfa Magneti",
                     modifier = Modifier
-                        .align(Alignment.BottomEnd) // SAĞ ALT KÖŞEYE ALDIK!
-                        .offset(x = 16.dp, y = 16.dp) // Hafif yukarı ve dışarı sarkıtarak harika bir tutturma efekti
-                        .size(140.dp) // KOCAMAN YAPTIK!
-                        .rotate(if (sayfaIndex % 2 == 0) -14f else 8f) // Altta olduğu için yana doğru çok tatlı eğilecektir
+                        .align(Alignment.TopEnd) // SAĞ ALT KÖŞEYE ALDIK!
+                        .offset(x = 12.dp, y = (-12).dp) // Hafif yukarı ve dışarı sarkıtarak harika bir tutturma efekti
+                        .size(130.dp) // KOCAMAN YAPTIK!
+                        .rotate(if (sayfaIndex % 2 == 0) 12f else -8f) // Altta olduğu için yana doğru çok tatlı eğilecektir
                 )
             }
 
@@ -131,7 +238,7 @@ fun AnaEkran() {
 
 
 @Composable
-fun OtantikNotDefteriListesi(eksikSiparisler: List<String>, sayfaNo: Int, toplamSayfa: Int) {
+fun OtantikNotDefteriListesi(eksikSiparisler: List<AlinacakUrun>, sayfaNo: Int, toplamSayfa: Int, onItemClick: (AlinacakUrun)-> Unit, onItemDelete: (AlinacakUrun)-> Unit) {
     val kagitRengi = Color(0xFFFFF9C4)
     val maviCizgi = Color(0xFF64B5F6)
     val kirmiziMarjin = Color(0xFFEF5350)
@@ -222,21 +329,39 @@ fun OtantikNotDefteriListesi(eksikSiparisler: List<String>, sayfaNo: Int, toplam
             }
 
             // MADDELER (Kırmızı çizginin hemen sağından başlıyor)
-            eksikSiparisler.forEach { urunAdi ->
-                Box(
+            eksikSiparisler.forEach { urun ->
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp)
-                        .padding(start = 64.dp, end = 16.dp),
-                    contentAlignment = Alignment.BottomStart
+                        .padding(start = 64.dp, end = 8.dp),
+                    verticalAlignment = Alignment.Bottom,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "- $urunAdi",
+                        text = "- ${urun.ad}",
                         fontFamily = elYazimiz,
                         fontSize = 32.sp,
-                        color = Color(0xFF333333),
-                        modifier = Modifier.padding(bottom = 8.dp)
+                        // Üstü çiziliyse soluk gri, değilse koyu yaz.
+                        color = if (urun.ustuCizikMi) Color(0xFF9E9E9E) else Color(0xFF333333),
+                        // Üstü çiziliyse çizgi çek, değilse çekme.
+                        textDecoration = if (urun.ustuCizikMi) androidx.compose.ui.text.style.TextDecoration.LineThrough else null,
+                        modifier = Modifier
+                            .padding(bottom = 8.dp)
+                            .clickable { onItemClick(urun) } // Tıklandığında AnaEkrana haber ver
+                            .weight(1f) // Yazı uzarsa ikonu sağa itsin
                     )
+                    // Sil Butonu (Zarif el yapımı gibi bir 'X' İkonu)
+                    IconButton(
+                        onClick = { onItemDelete(urun) }, // Tıklandığında yine haber ver
+                        modifier = Modifier.padding(bottom = 6.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Clear,
+                            contentDescription = "Sil",
+                            tint = Color(0xFFEF5350).copy(alpha = 0.6f) // Sayfa marjini ile uyumlu soluk kırmızı
+                        )
+                    }
                 }
             }
 
