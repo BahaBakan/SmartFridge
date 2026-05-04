@@ -5,6 +5,8 @@
 ![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-4285F4?style=for-the-badge&logo=android&logoColor=white)
 ![ESP32](https://img.shields.io/badge/ESP32-E7352C?style=for-the-badge&logo=espressif&logoColor=white)
 ![YOLO](https://img.shields.io/badge/YOLO-00FFFF?style=for-the-badge&logo=YOLO&logoColor=black)
+![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)
+![TensorFlow](https://img.shields.io/badge/TensorFlow-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white)
 
 **Akıllı Buzdolabım**, mutfaktaki stok yönetimini Nesnelerin İnterneti (IoT) ve Makine Öğrenmesi (Machine Learning) teknolojileri ile baştan tasarlayan vizyoner bir donanım ve yazılım projesidir. Proje; **ESP32-CAM** donanımı, YOLO nesne tanıma modeli ve Jetpack Compose ile yazılan modern Android uygulamasından oluşmaktadır.
 
@@ -22,9 +24,10 @@
 * **Canlı Durum Yönetimi (State Management):** Kullanıcının sayfalar arası geçişi ve ürünler ile etkileşimi (üstünü çizme vb.) için modern StateList mimarileri inşa edilmiştir.
 
 ### 🔌 Donanım & Yapay Zeka (Smart Hardware)
-* **ESP32-CAM Entegrasyonu:** Buzdolabı içerisine yerleştirilen mikrodenetleyici kameralar sayesinde dolabın anlık görüntü verisi alınır.
-* **YOLO Nesne Tespiti:** Görüntüler yapay zeka üzerinden geçirilerek içerideki ürünler (Süt, Domates vb.) otomatik olarak algılanır.
-* **Otonom Liste:* Eksilen veya eklenen ürünler, uygulamanın not defterine gerçek zamanlı senkronize edilir. (Geliştirme Aşamasında)
+* **Custom Trained YOLOv11:** Yapay zeka modeli hazır kullanılmamış, projeye özel 16 farklı ürünle sıfırdan eğitilmiştir (**mAP@50 Doğruluk: 0.935**).
+* **Edge Computing (Offline AI):** Görüntü işleme işlemi bulutta değil, tamamen cihaz üzerinde (Offline) **TensorFlow Lite** kullanılarak saniyeler içinde gerçekleştirilir.
+* **Multi-Camera Mimari:** İki katlı buzdolabındaki 4 farklı ESP32 kamerasından Firebase üzerine "Overwrite" mantığıyla anlık veri akışı sağlanır. Sistem bu 4 açıyı asenkron işleyip en doğru sonucu "Data Fusion" ile tespit eder.
+* **Akıllı Karar Algoritmaları:** Sistem sadece ürün saymaz; ürünleri "Tek Kullanımlık (Yumurta)" ve "Çok Kullanımlık (Süt)" olarak ayırarak eski JSON verisiyle kıyaslar ve kendi mantıksal eşiklerine göre alışveriş listeleri oluşturur.
 
 ---
 
@@ -32,8 +35,8 @@
 
 * **Mobil Uygulama:** Kotlin, Jetpack Compose, Material Design 3, Compose Navigation, DataStore
 * **Donanım:** ESP32-CAM, Güç Bankası / Pil Modülleri, Manyetik Kapı Sensörü
-* **Yapay Zeka:** YOLOv11 (Nesne Tespiti)
-* **Veritabanı / İletişim:** Firebase Realtime Database / Wi-Fi Protokolleri (Gelecek Güncellemede aktifleştirilecek)
+* **Yapay Zeka:** YOLOv11 (Özel Eğitimli Model), TensorFlow Lite (Offline Inference)
+* **Veritabanı / İletişim:** Firebase Storage (Görüntü Aktarımı), Firebase Realtime Database (JSON Senkronizasyonu)
 
 ---
 
@@ -50,8 +53,9 @@
 ## 🚀 Bekleyen Geliştirmeler (Roadmap)
 - [x] UI Yapısının Jetpack Compose ile oluşturulması
 - [x] Otantik alışveriş listesi tasarımının ve 3D sayfa çevirme motorunun eklenmesi
-- [ ] Kullanıcı etkileşiminin sağlanması (Ürünlerin üstünü çizme ve silme)
-- [ ] Firebase ile canlı veritabanı entegrasyonu
-- [ ] Mikrodenetleyici (ESP32-CAM) ile donanım uyumu testleri
+- [x] Firebase Storage ve Realtime Database entegrasyonlarının tamamlanması
+- [x] Özel Yapay Zeka modelinin (Custom YOLOv11) TFLite ile Android'e gömülmesi
+- [ ] Multi-Camera Karşılaştırma Algoritmasının (Data Fusion) koda dökülmesi
+- [ ] Ayarlar Ekranından "Kullanıcıya Özel Kritik Eşik" girilmesinin sağlanması
 
 > Bu proje bir mezuniyet / Ar-Ge ürünü olarak tamamen açık kaynaklı geliştirilmektedir. Modern Android mimarilerini ve donanım gücünü bir araya getirerek mutfak asistanlığında yepyeni bir sayfa açmayı amaçlar.
