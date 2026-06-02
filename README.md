@@ -14,9 +14,9 @@
 
 ## ✨ Öne Çıkan Özellikler
 
-<img width="945" height="2048" alt="ayarlar1" src="https://github.com/user-attachments/assets/609337ce-9c0c-41df-857b-dcb1fff97ad1" />
-<img width="369" height="790" alt="ayarlar2" src="https://github.com/user-attachments/assets/84450271-3790-442c-b20a-602e1bacc77e" />
-<img width="380" height="790" alt="ana_sayfa" src="https://github.com/user-attachments/assets/306c6d08-667e-4188-9e71-66e0e9a71dfa" />
+<img width="260" height="2048" alt="ayarlar1" src="https://github.com/user-attachments/assets/609337ce-9c0c-41df-857b-dcb1fff97ad1" />
+<img width="260" height="790" alt="ayarlar2" src="https://github.com/user-attachments/assets/84450271-3790-442c-b20a-602e1bacc77e" />
+<img width="260" height="790" alt="ana_sayfa" src="https://github.com/user-attachments/assets/306c6d08-667e-4188-9e71-66e0e9a71dfa" />
 
 ### 📱 Yazılım (Android App)
 * **100% Jetpack Compose:** Arayüz tamamen Google'ın en güncel ve modern arayüz geliştirme kiti ile sıfırdan yazılmıştır.
