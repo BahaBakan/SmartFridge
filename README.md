@@ -1,4 +1,4 @@
-<img width="1200" height="1600" alt="WhatsApp Image 2026-05-23 at 22 52 33 (2)" src="https://github.com/user-attachments/assets/7aa6f6ad-ed8a-48d2-ac65-920a8c668af8" />
+
 # 🧊 Akıllı Buzdolabım (Smart Fridge)
 
 ![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)
