@@ -1,3 +1,4 @@
+<img width="1200" height="1600" alt="WhatsApp Image 2026-05-23 at 22 52 33 (2)" src="https://github.com/user-attachments/assets/7aa6f6ad-ed8a-48d2-ac65-920a8c668af8" />
 # 🧊 Akıllı Buzdolabım (Smart Fridge)
 
 ![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)
@@ -19,6 +20,8 @@
   <img width="260" alt="ayarlar1" src="https://github.com/user-attachments/assets/db544e8f-d9d8-4cb3-9bdf-caa93771bc87" /> &nbsp; 
   <img width="260" alt="ayarlar2" src="https://github.com/user-attachments/assets/190f18ac-4b50-4808-916a-7dc677bd6f11" />
 </p>
+<img width="1200" height="1600" alt="WhatsApp Image 2026-05-23 at 22 52 33 (2)" src="https://github.com/user-attachments/assets/1e037fce-df74-4fc2-8f3d-8ad6fd4b879a" />
+
 
 ### 🧠 Yapay Zeka ve Bilgisayarlı Görü İnovasyonları
 * **Domain Adaptation (İnce Ayar):** Model sadece internet verisiyle değil, ESP32 OV2640 kamerasının kendine has düşük dinamik aralığına ve renk sapmalarına (pembe/mor tonlar) karşı özel veri seti oluşturularak **Fine-Tune** edilmiştir. Bu sayede zorlu donanım koşullarında bile mükemmel tanıma sağlanır.
