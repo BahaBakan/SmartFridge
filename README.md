@@ -19,8 +19,9 @@
   <img width="260" alt="ana_sayfa" src="https://github.com/user-attachments/assets/c19fd538-f15f-433e-9f51-63f84d0d7bc8" /> &nbsp; 
   <img width="260" alt="ayarlar1" src="https://github.com/user-attachments/assets/db544e8f-d9d8-4cb3-9bdf-caa93771bc87" /> &nbsp; 
   <img width="260" alt="ayarlar2" src="https://github.com/user-attachments/assets/190f18ac-4b50-4808-916a-7dc677bd6f11" />
+  <img width="260" height="1600" alt="WhatsApp Image 2026-05-23 at 22 52 33 (2)" src="https://github.com/user-attachments/assets/1e037fce-df74-4fc2-8f3d-8ad6fd4b879a" />
 </p>
-<img width="1200" height="1600" alt="WhatsApp Image 2026-05-23 at 22 52 33 (2)" src="https://github.com/user-attachments/assets/1e037fce-df74-4fc2-8f3d-8ad6fd4b879a" />
+
 
 
 ### 🧠 Yapay Zeka ve Bilgisayarlı Görü İnovasyonları
